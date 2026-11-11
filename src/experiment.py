@@ -113,11 +113,11 @@ def choose_candidate(judge_output: str, n_candidates: int) -> int | None:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
-    parser.add_argument("--sample-size", type=int, default=20)
+    parser.add_argument("--model", default="Qwen/Qwen2.5-0.5B-Instruct")
+    parser.add_argument("--sample-size", type=int, default=10)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--max-new-tokens", type=int, default=256)
-    parser.add_argument("--num-candidates", type=int, default=3)
+    parser.add_argument("--max-new-tokens", type=int, default=160)
+    parser.add_argument("--num-candidates", type=int, default=2)
     args = parser.parse_args()
 
     if args.sample_size < 1 or args.num_candidates < 2:
@@ -181,7 +181,7 @@ def main():
         for _ in range(args.num_candidates):
             candidate, token_count = generate(
                 tokenizer, model,
-                candidates_template.format(n=args.num_candidates, question=question),
+                candidates_template.format(question=question),
                 args.max_new_tokens, sample=True
             )
             candidate_texts.append(candidate)
