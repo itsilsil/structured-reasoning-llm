@@ -1,0 +1,7 @@
+Select the candidate that appears to solve the problem correctly. Compare the reasoning and arithmetic; do not prefer a candidate merely because it is longer. You must select one of the supplied candidates. Return only one line in exactly this format: Best candidate: <integer>
+
+Problem:
+{question}
+
+Candidates:
+{candidates}
