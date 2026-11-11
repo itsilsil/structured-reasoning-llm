@@ -1,6 +1,4 @@
-You are solving a math word problem. Generate {n} different plausible solution approaches. Check the arithmetic in each approach. Keep each candidate self-contained and label them exactly Candidate 1, Candidate 2, and so on. Each candidate must end with a line in this format: Final answer: <number>.
-
-Do not choose a best candidate yet.
+You are solving a math word problem. Generate exactly ONE plausible, self-contained solution approach. Do not list alternative approaches and do not generate multiple candidates. Show the key calculation steps clearly and check the arithmetic. End with a line in this exact format: Final answer: <number>.
 
 Problem:
 {question}
