@@ -21,7 +21,7 @@ How does changing the structure of reasoning from a single direct/sequential res
 - Primary metric: exact-match accuracy after extracting the final numeric answer
 - Efficiency proxies: generated tokens and model-generation calls
 
-All methods receive the same sampled questions. The pilot is intended to validate the pipeline; begin with 2 questions on CPU, then use 10 if the run completes reliably.
+All methods receive the same sampled questions. The pilot is intended to validate the pipeline; begin with 2 questions on Kaggle CPU, then use 10 if the run completes reliably. GPU access is optional.
 
 ## Repository structure
 
@@ -36,23 +36,25 @@ All methods receive the same sampled questions. The pilot is intended to validat
 │   └── experiment.py
 ├── results/
 │   └── .gitkeep
+├── notebooks/
+│   └── kaggle_gpu_runner.ipynb
 ├── requirements.txt
 └── README.md
 ```
 
 ## Run
 
-Python 3.10+ is recommended. This repository is configured for a CPU-only pilot on a modest laptop: Qwen2.5-0.5B-Instruct, 10 questions, 160 maximum new tokens, and 2 candidate paths. CPU execution will still be slow. Run a 2-question smoke test first before attempting the 10-question pilot. The model is downloaded from Hugging Face on the first run, so internet access and sufficient disk/RAM/VRAM are required.
+Python 3.10+ is recommended. The included Kaggle notebook is configured to run on CPU; a GPU is optional. It first runs a 2-question smoke test with Qwen2.5-0.5B-Instruct, 96 maximum new tokens, and 2 candidate paths. CPU execution may take several minutes or longer. Run the 10-question pilot only after the smoke test succeeds. The model and dataset are downloaded on the first run, so the Kaggle session needs Internet access.
 
 ```bash
 pip install -r requirements.txt
-python src/experiment.py --sample-size 2 --seed 42
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python src/experiment.py --sample-size 2 --seed 42 --max-new-tokens 96
 ```
 
 If the 2-question smoke test completes successfully, run the 10-question pilot:
 
 ```bash
-python src/experiment.py --sample-size 10 --seed 42
+OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python src/experiment.py --sample-size 10 --seed 42 --max-new-tokens 96
 ```
 
 Optional arguments:
