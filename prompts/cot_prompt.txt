@@ -1,0 +1,5 @@
+Solve the following math word problem carefully. Work through the solution step by step, then give the final numeric answer clearly on the last line in exactly this format:
+Final answer: <number>
+
+Problem:
+{question}
