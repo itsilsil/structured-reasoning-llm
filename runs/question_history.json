@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "dataset": "openai/gsm8k",
+  "configuration": "main",
+  "split": "test",
+  "used_indices": [
+    57,
+    289,
+    400,
+    588,
+    599,
+    608,
+    618,
+    906,
+    1214,
+    1252
+  ],
+  "runs": [
+    {
+      "run_id": "initial_pilot_2026-11-12",
+      "created_at": "2026-11-12",
+      "status": "completed",
+      "source": "Legacy results/ experiment",
+      "attempted_indices": [
+        57,
+        289,
+        400,
+        588,
+        599,
+        608,
+        618,
+        906,
+        1214,
+        1252
+      ],
+      "reserved_indices": [],
+      "note": "The original 10-question pilot is retained as a historical baseline and excluded from future default sampling."
+    }
+  ]
+}
