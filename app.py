@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -48,6 +49,31 @@ def load_run(folder):
     config = json.loads(config_path.read_text(encoding="utf-8")) if config_path.exists() else {}
     report_path = folder / "question_report.md"
     report = report_path.read_text(encoding="utf-8") if report_path.exists() else None
+
+    # Legacy pilot JSONL did not store question text. Recover it from its
+    # accompanying Markdown report so the old run remains fully inspectable.
+    if report and not details.empty:
+        report_questions = {}
+        blocks = re.split(r"(?=^### Question \\d+ \\(dataset index: \\d+\\)\\s*$)", report, flags=re.MULTILINE)
+        for block in blocks:
+            index_match = re.search(r"^### Question \\d+ \\(dataset index: (\\d+)\\)", block, flags=re.MULTILINE)
+            problem_match = re.search(r"\\*\\*Problem:\\*\\*\\s*(.*?)\\s*\\*\\*Correct answer:\\*\\*", block, flags=re.DOTALL)
+            answer_match = re.search(r"\\*\\*Correct answer:\\*\\*\\s*(.*?)\\s*(?=^#### Direct)", block, flags=re.DOTALL | re.MULTILINE)
+            if index_match and problem_match:
+                idx = int(index_match.group(1))
+                report_questions[idx] = {
+                    "question": problem_match.group(1).strip(),
+                    "report_gold_answer": answer_match.group(1).strip() if answer_match else None,
+                }
+        if report_questions:
+            details["question"] = details["dataset_index"].astype(int).map(
+                lambda idx: report_questions.get(idx, {}).get("question", "متن سؤال در گزارش پیدا نشد.")
+            )
+            if "gold_answer" not in details.columns:
+                details["gold_answer"] = details["dataset_index"].astype(int).map(
+                    lambda idx: report_questions.get(idx, {}).get("report_gold_answer")
+                )
+
     if not details.empty:
         details["method"] = pd.Categorical(details["method"], METHODS, ordered=True)
         details = details.sort_values(["dataset_index", "method"])
@@ -260,11 +286,18 @@ with tot_tab:
                     raw = json.loads(str(row.get("raw_output", "{}")))
                 except json.JSONDecodeError:
                     raw = {}
-                for i, candidate in enumerate(raw.get("candidates", []), 1):
-                    st.markdown(f"**Candidate {i}**")
+                candidates = raw.get("candidates", [])
+                candidate_answers = raw.get("candidate_answers", row.get("candidate_answers", []))
+                for i, candidate in enumerate(candidates, 1):
+                    answer = candidate_answers[i - 1] if i - 1 < len(candidate_answers) else "استخراج نشده"
+                    st.markdown(f"**Candidate {i} · پاسخ استخراج‌شده: {answer}**")
                     st.code(candidate, language="text")
+                st.markdown("**انتخاب داور**")
+                st.write(raw.get("selected_candidate", row.get("selected_candidate", "در خروجی ثبت نشده")))
                 st.markdown("**Judge output**")
                 st.code(raw.get("judge_output", row.get("judge_output", "")), language="text")
+                st.markdown("**خروجی مسیر انتخاب‌شده**")
+                st.code(raw.get("selected_candidate_output", ""), language="text")
 
 with downloads:
     st.caption("دانلود خروجی‌ها آزمایش را دوباره اجرا نمی‌کند.")
