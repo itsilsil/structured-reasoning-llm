@@ -1,58 +1,105 @@
-# View and analyze project results in GitHub Codespaces
+# راهنمای اجرای پروژه در GitHub Codespaces
 
-The 10-question pilot experiment has already been completed. Its saved outputs are in the repository's `results/` directory. **You do not need to run the model again to use either the dashboard or the analysis notebook.**
+این فایل راهنمای عملیاتی واحد برای اجرای آزمایش، حفظ تاریخچه سؤال‌ها، ساخت گزارش و مشاهده داشبورد است.
 
-## Option 1: Interactive dashboard (recommended)
+## ۱. آماده‌سازی محیط
 
-In the Codespaces terminal, run:
+پس از بازکردن Codespace پروژه:
 
-```bash
-pip install -r requirements-dashboard.txt
+~~~bash
+git pull origin main
+pip install -r requirements.txt -r requirements-dashboard.txt
+~~~
+
+## ۲. اجرای آزمایش روی سؤال‌های جدید
+
+اجرای پیش‌فرض، ۲۰ سؤال تصادفی از میان سؤال‌هایی را انتخاب می‌کند که در تاریخچه پروژه استفاده نشده‌اند:
+
+~~~bash
+python src/experiment.py --sample-size 20 --num-candidates 2 --max-new-tokens 256
+~~~
+
+برای نمونه بزرگ‌تر:
+
+~~~bash
+python src/experiment.py --sample-size 50 --num-candidates 2 --max-new-tokens 256
+~~~
+
+برای تعیین Seed:
+
+~~~bash
+python src/experiment.py --sample-size 20 --seed 123 --num-candidates 2 --max-new-tokens 256
+~~~
+
+- در صورت ندادن Seed، یک Seed تصادفی ساخته می‌شود.
+- انتخاب سؤال‌ها از شناسه‌های استفاده‌نشده GSM8K test انجام می‌شود.
+- شناسه‌های پایلوت اولیه results/ نیز از نمونه‌گیری جدید کنار گذاشته می‌شوند.
+- هر اجرا پوشه یکتای خودش را در runs/ دارد؛ خروجی اجرای قبلی بازنویسی نمی‌شود.
+- اجرای هم‌زمان با قفل تاریخچه از رزرو هم‌زمان یک سؤال برای دو اجرا جلوگیری می‌کند.
+- در صورت توقف ناگهانی، شناسه‌های رزروشده/تلاش‌شده برای جلوگیری از تکرار حفظ می‌شوند.
+
+### تکرار عمدی سؤال‌های قبلی
+
+فقط اگر برای آزمایش کنترل‌شده به تکرار نیاز دارید:
+
+~~~bash
+python src/experiment.py --sample-size 10 --seed 42 --allow-repeats
+~~~
+
+## ۳. فایل‌های هر اجرا
+
+هر اجرا در مسیر runs/RUN_ID/ ذخیره می‌شود:
+
+- experiment_results.jsonl: متن مسئله، پاسخ مرجع، پرامپت، خروجی خام، پاسخ استخراج‌شده، صحت، توکن‌های ورودی/خروجی، زمان و تعداد فراخوانی‌ها؛ برای ToT اطلاعات Candidateها و Judge نیز ذخیره می‌شود.
+- summary.csv: خلاصه معیارها برای هر روش.
+- run_config.json: مدل، اندازه مجموعه داده، Seed، شناسه سؤال‌ها، زمان و وضعیت اجرا.
+- question_report.md: گزارش تفصیلی که با دستور بخش ۴ ساخته می‌شود.
+
+پایلوت اولیه در results/ حفظ می‌شود و در تاریخچه استفاده‌شده‌ها لحاظ شده است.
+
+## ۴. ساخت گزارش سؤال‌به‌سؤال
+
+~~~bash
+python src/make_report.py --input-dir runs/RUN_ID
+~~~
+
+RUN_ID را با نام پوشه اجرای موردنظر جایگزین کنید. گزارش در همان پوشه ذخیره می‌شود. این دستور مدل را اجرا نمی‌کند.
+
+## ۵. اجرای داشبورد
+
+~~~bash
 streamlit run app.py --server.address 0.0.0.0 --server.port 8501
-```
+~~~
 
-When Codespaces detects port **8501**, open the **Ports** tab and choose **Open in Browser**.
+در تب **Ports**، پورت 8501 را باز کنید.
 
-The dashboard provides:
-- Method comparison charts for accuracy, generated tokens, generation calls, and judge-format failures.
-- Per-question inspection: problem statement, gold answer, model answer, correctness, token count, and raw model output.
-- ToT-inspired candidate paths and judge output.
-- Comparison of saved runs under `results/` and `runs/`.
-- Downloads for CSV, JSONL, JSON configuration, Markdown report, and a ZIP bundle.
+داشبورد، اجراهای کامل موجود در results/ و runs/ را شناسایی می‌کند و امکان مشاهده موارد زیر را می‌دهد:
+- اندازه کل GSM8K test و تعداد سؤال‌های هر اجرا
+- تعداد سؤال‌های استفاده‌شده پیش از هر اجرا
+- نمودارهای دقت، توکن ورودی/خروجی، فراخوانی مدل و زمان تولید
+- صورت کامل سؤال و پاسخ مرجع
+- پاسخ، پرامپت و خروجی خام هر روش
+- Candidateها، پاسخ‌های استخراج‌شده، خروجی Judge و مسیر منتخب
+- مقایسه اجراها و دریافت فایل‌های CSV، JSONL، JSON، Markdown و ZIP
 
-The dashboard reads saved files only. It does not load Qwen or run inference.
+داشبورد فقط نتایج ذخیره‌شده را می‌خواند و مدل را بارگذاری یا اجرا نمی‌کند.
 
-## Option 2: Analysis notebook
+## ۶. Notebook تحلیل نتایج
 
-1. Open `notebooks/codespaces_results_analysis.ipynb` in the VS Code editor.
-2. Select the Python kernel for the current Codespace.
-3. If the required packages are not installed, run:
+فایل notebooks/codespaces_results_analysis.ipynb را در VS Code باز کنید، کرنل Python را انتخاب کنید و سلول‌ها را به‌ترتیب اجرا کنید. Notebook می‌تواند اجرای ذخیره‌شده را انتخاب و تحلیل کند؛ اجرای مدل لازم نیست.
 
-   ```bash
-   pip install -r requirements-dashboard.txt
-   ```
+## ۷. حفظ تاریخچه در GitHub
 
-4. Run the notebook cells from top to bottom.
+فایل runs/question_history.json شناسه‌های سؤال‌های استفاده‌شده را نگه می‌دارد. پس از اجرای آزمایش، برای همگام‌سازی تاریخچه با GitHub:
 
-The notebook displays the experiment configuration, comparison charts, per-question results, raw model outputs, and ToT-inspired candidate/judge details. It also saves `results/question_details.csv`.
+~~~bash
+git add runs/question_history.json
+git commit -m "Update GSM8K question history"
+git push
+~~~
 
-## Saved result files
+خروجی‌های هر اجرا در runs/run_*/ محلی نگه داشته می‌شوند و به‌طور پیش‌فرض در Git ثبت نمی‌شوند تا فایل‌های حجیم بی‌دلیل به مخزن اضافه نشوند. اگر Codespace جدیدی می‌سازید، ابتدا آخرین تغییرات را pull کنید تا تاریخچه سؤال‌ها دریافت شود.
 
-- `results/summary.csv`: aggregate metrics for the three methods.
-- `results/experiment_results.jsonl`: raw outputs and per-question metadata.
-- `results/run_config.json`: model and experiment configuration.
-- `results/question_report.md`: detailed written report.
+## ۸. توقف محیط
 
-## Optional: run a new experiment
-
-Only run this section if you intentionally want to collect additional results. It is not needed to view the completed 10-question pilot.
-
-```bash
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python src/experiment.py --sample-size 2 --seed 42 --num-candidates 2 --max-new-tokens 96 --output-dir runs/new_smoke_test
-```
-
-Use a new directory under `runs/` so that the existing `results/` files are not overwritten. To run a larger sample, change `--sample-size` deliberately; remember that CPU inference can take a long time.
-
-## Stop the Codespace
-
-When finished, stop the Codespace from the GitHub Codespaces page or the Codespaces menu. This prevents it from continuing to run while you are not using it.
+پس از اتمام کار، Codespace را از منوی GitHub Codespaces متوقف کنید تا در زمان عدم استفاده فعال نماند.
