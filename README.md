@@ -118,7 +118,7 @@ structured-reasoning-llm/
 - run_config.json: تنظیمات، شناسه سؤال‌ها و وضعیت اجرا
 - question_report.md: گزارش سؤال‌به‌سؤال (پس از اجرای ابزار گزارش)
 
-پوشه‌های اجرای تولیدشده در Codespaces محلی نگه داشته می‌شوند و در .gitignore قرار دارند؛ فایل runs/question_history.json برای حفظ جلوگیری از تکرار در GitHub قابل commit است.
+پوشه‌های اجرای تولیدشده در Codespaces محلی نگه داشته می‌شوند و در .gitignore قرار دارند؛ فایل runs/question_history.json برای جلوگیری از تکرار سؤال‌ها در GitHub نگهداری می‌شود و باید پس از هر اجرا همگام‌سازی شود.
 
 ## ۸. راه‌اندازی در GitHub Codespaces
 
