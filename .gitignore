@@ -8,3 +8,5 @@ huggingface/
 results/*.jsonl
 results/*.csv
 results/*.json
+runs/run_*/
+runs/.question_history.lock
