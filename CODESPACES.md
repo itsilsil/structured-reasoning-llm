@@ -28,9 +28,28 @@ OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python src/experiment.py --sample-size 2 --s
 
 The first run downloads the model and GSM8K dataset, so it needs internet access and may take a while.
 
+## View the saved results without rerunning the model
+
+The 10-question experiment already saved its outputs in `results/`. To inspect those results, you do not need to load the model or run the experiment again.
+
+### Option A: Interactive dashboard
+
+In the Codespaces terminal:
+
+```bash
+pip install -r requirements-dashboard.txt
+streamlit run app.py --server.address 0.0.0.0 --server.port 8501
+```
+
+When Codespaces detects port 8501, open the **Ports** tab and choose **Open in Browser**. The dashboard includes method-comparison charts, question-by-question outputs, ToT candidate and judge inspection, saved-run comparison, and CSV/JSONL/Markdown/ZIP downloads.
+
+### Option B: Analysis notebook
+
+Open `notebooks/codespaces_results_analysis.ipynb` in the VS Code editor, select the Python kernel, and run the cells from top to bottom. It reads the existing `results/` files and does not reload the language model.
+
 ## Inspect and export results
 
-After the run finishes:
+To inspect the summary directly:
 
 ```bash
 cat results/summary.csv
