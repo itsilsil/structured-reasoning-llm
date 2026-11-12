@@ -247,8 +247,11 @@ structured-reasoning-llm/
 │   └── question_report.md
 │
 ├── notebooks/
-│   └── colab_interactive_experiment.ipynb
+│   ├── colab_interactive_experiment.ipynb
+│   └── codespaces_results_analysis.ipynb
 │
+├── app.py
+├── requirements-dashboard.txt
 ├── requirements.txt
 ├── CODESPACES.md
 └── README.md
@@ -264,13 +267,35 @@ structured-reasoning-llm/
 - `run_config.json`: تنظیمات و اطلاعات اجرای آزمایش.
 - `accuracy_comparison.png`: نمودار نهایی مقایسه دقت.
 - `question_report.md`: گزارش تفصیلی نتایج هر مسئله.
-- `notebooks/colab_interactive_experiment.ipynb`: نوت‌بوک تعاملی برای اجرای آزمایش، نمایش نمودارها و دریافت خروجی‌ها در Google Colab.
+- `notebooks/colab_interactive_experiment.ipynb`: نوت‌بوک تعاملی برای اجرای آزمایش در Google Colab.
+- `notebooks/codespaces_results_analysis.ipynb`: نوت‌بوک تحلیل نتایج ذخیره‌شده در Codespaces؛ بدون بارگذاری مدل یا اجرای مجدد آزمایش.
+- `app.py`: داشبورد تعاملی Streamlit برای مقایسه روش‌ها، بررسی سؤال‌ها و خروجی خام مدل، تحلیل داوری ToT و دانلود گزارش‌ها.
+- `requirements-dashboard.txt`: وابستگی‌های لازم برای داشبورد و نوت‌بوک تحلیل.
 
 ---
 
 ## 10. نحوه اجرای پروژه
 
-Python 3.10 یا نسخه‌های جدیدتر توصیه می‌شود. اجرای مدل به حافظه و توان پردازشی وابسته است. برای اجرای تعاملی، می‌توانید نوت‌بوک [Google Colab](notebooks/colab_interactive_experiment.ipynb) را باز کنید و در صورت دسترسی، GPU را فعال کنید. اجرای محلی نیز با دستورهای زیر امکان‌پذیر است.
+Python 3.10 یا نسخه‌های جدیدتر توصیه می‌شود. اجرای مدل به حافظه و توان پردازشی وابسته است. برای اجرای آزمایش می‌توانید از نوت‌بوک [Google Colab](notebooks/colab_interactive_experiment.ipynb) استفاده کنید. برای مشاهده و تحلیل نتایج ذخیره‌شده در GitHub Codespaces، داشبورد یا نوت‌بوک تحلیل را اجرا کنید؛ این دو ابزار برای نمایش نتایج به بارگذاری مجدد مدل نیاز ندارند.
+
+### اجرای داشبورد در Codespaces
+
+در ترمینال Codespaces:
+
+```bash
+pip install -r requirements-dashboard.txt
+streamlit run app.py --server.address 0.0.0.0 --server.port 8501
+```
+
+پس از اجرا، از اعلان Ports گزینه Open in Browser را برای پورت 8501 انتخاب کنید. داشبورد نتایج پوشه `results/` و اجراهای ذخیره‌شده در `runs/` را پیدا می‌کند. از پنل سمت چپ می‌توانید اجرا را انتخاب کنید و چند اجرا را با هم مقایسه کنید.
+
+### اجرای Notebook تحلیل نتایج
+
+فایل `notebooks/codespaces_results_analysis.ipynb` را در VS Code باز کنید، کرنل Python را انتخاب کنید و سلول‌ها را به‌ترتیب اجرا کنید. این Notebook جدول‌ها، نمودارها، خروجی خام هر روش و جزئیات مسیرهای کاندید و داوری ToT-inspired را نمایش می‌دهد.
+
+### اجرای آزمایش جدید
+
+دستورهای اجرای آزمایش اصلی در ادامه آمده‌اند. برای مشاهده نتایج فعلی، نیازی به اجرای مجدد این دستورها نیست.
 
 نصب وابستگی‌ها:
 
