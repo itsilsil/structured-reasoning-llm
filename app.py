@@ -54,11 +54,11 @@ def load_run(folder):
     # accompanying Markdown report so the old run remains fully inspectable.
     if report and not details.empty:
         report_questions = {}
-        blocks = re.split(r"(?=^### Question \\d+ \\(dataset index: \\d+\\)\\s*$)", report, flags=re.MULTILINE)
+        blocks = re.split(r"(?=^### Question \d+ \(dataset index: \d+\)\s*$)", report, flags=re.MULTILINE)
         for block in blocks:
-            index_match = re.search(r"^### Question \\d+ \\(dataset index: (\\d+)\\)", block, flags=re.MULTILINE)
-            problem_match = re.search(r"\\*\\*Problem:\\*\\*\\s*(.*?)\\s*\\*\\*Correct answer:\\*\\*", block, flags=re.DOTALL)
-            answer_match = re.search(r"\\*\\*Correct answer:\\*\\*\\s*(.*?)\\s*(?=^#### Direct)", block, flags=re.DOTALL | re.MULTILINE)
+            index_match = re.search(r"^### Question \d+ \(dataset index: (\d+)\)", block, flags=re.MULTILINE)
+            problem_match = re.search(r"\*\*Problem:\*\*\s*(.*?)\s*\*\*Correct answer:\*\*", block, flags=re.DOTALL)
+            answer_match = re.search(r"\*\*Correct answer:\*\*\s*(.*?)\s*(?=^#### Direct)", block, flags=re.DOTALL | re.MULTILINE)
             if index_match and problem_match:
                 idx = int(index_match.group(1))
                 report_questions[idx] = {
