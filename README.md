@@ -53,7 +53,7 @@
 | Seed نمونه‌گیری | 42 |
 | تعداد مسیرهای پیشنهادی در ToT | 2 |
 | حداکثر توکن جدید در هر فراخوانی اصلی | 256 |
-| محیط اجرا | GitHub Codespaces |
+| محیط اجرا | Google Colab / GitHub Codespaces |
 | چارچوب اجرا | Python, PyTorch, Transformers |
 
 هر سه روش روی مجموعه یکسانی از مسائل ارزیابی شده‌اند. نمونه‌ها با Seed ثابت انتخاب شده‌اند تا انتخاب داده‌ها قابل تکرار باشد.
@@ -247,7 +247,7 @@ structured-reasoning-llm/
 │   └── question_report.md
 │
 ├── notebooks/
-│   └── kaggle_gpu_runner.ipynb
+│   └── colab_interactive_experiment.ipynb
 │
 ├── requirements.txt
 ├── CODESPACES.md
@@ -264,12 +264,13 @@ structured-reasoning-llm/
 - `run_config.json`: تنظیمات و اطلاعات اجرای آزمایش.
 - `accuracy_comparison.png`: نمودار نهایی مقایسه دقت.
 - `question_report.md`: گزارش تفصیلی نتایج هر مسئله.
+- `notebooks/colab_interactive_experiment.ipynb`: نوت‌بوک تعاملی برای اجرای آزمایش، نمایش نمودارها و دریافت خروجی‌ها در Google Colab.
 
 ---
 
 ## 10. نحوه اجرای پروژه
 
-Python 3.10 یا نسخه‌های جدیدتر توصیه می‌شود. اجرای مدل به حافظه و توان پردازشی وابسته است؛ استفاده از محیط ابری مانند GitHub Codespaces می‌تواند جایگزین مناسبی برای سیستم‌های فاقد GPU باشد.
+Python 3.10 یا نسخه‌های جدیدتر توصیه می‌شود. اجرای مدل به حافظه و توان پردازشی وابسته است. برای اجرای تعاملی، می‌توانید نوت‌بوک [Google Colab](notebooks/colab_interactive_experiment.ipynb) را باز کنید و در صورت دسترسی، GPU را فعال کنید. اجرای محلی نیز با دستورهای زیر امکان‌پذیر است.
 
 نصب وابستگی‌ها:
 
