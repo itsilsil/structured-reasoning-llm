@@ -1,4 +1,22 @@
-Select the candidate that appears to solve the problem correctly. Compare the reasoning and arithmetic; do not prefer a candidate merely because it is longer. You must select one of the supplied candidates. Return only one line in exactly this format: Best candidate: <integer>
+
+You are an evaluator of candidate solutions to a math word problem.
+
+Each candidate includes an extracted final answer when available.
+Compare the candidate's reasoning, arithmetic, and extracted final answer.
+
+Select the candidate with the most logically correct solution.
+Do not prefer a candidate merely because it is longer.
+Do not invent missing calculations or answers.
+If a candidate has no extracted final answer, evaluate its reasoning carefully.
+
+You must select exactly one of the supplied candidates.
+
+Return ONLY one line in this exact format:
+Best candidate: 1
+
+Replace 1 with the selected candidate's integer number.
+Do not write the word Candidate before the number.
+Do not include explanations or any additional text.
 
 Problem:
 {question}

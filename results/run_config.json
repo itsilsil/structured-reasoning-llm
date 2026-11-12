@@ -1,0 +1,17 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "dataset": "openai/gsm8k",
+  "configuration": "main",
+  "split": "test",
+  "sample_size": 10,
+  "sample_seed": 42,
+  "max_new_tokens": 256,
+  "num_candidates": 2,
+  "elapsed_seconds": 1160.27,
+  "device_map": "auto",
+  "notes": [
+    "ToT-inspired candidate generation and same-model judging; not full ToT.",
+    "Generated tokens are an output-volume proxy, not monetary cost.",
+    "Unparseable final answers are counted as incorrect."
+  ]
+}

@@ -1,95 +1,334 @@
-# Structured Reasoning in Language Models: From Chain of Thought to Tree of Thoughts
+# استدلال ساختارمند در مدل‌های زبانی
+## از زنجیره افکار (Chain of Thought) تا درخت افکار (Tree of Thoughts)
 
-A small, reproducible study comparing three prompting strategies on multi-step arithmetic reasoning:
+این مخزن شامل پیاده‌سازی و ارزیابی آزمایشی سه راهبرد برای حل مسائل ریاضی چندمرحله‌ای توسط مدل‌های زبانی بزرگ (LLMs) است. هدف پژوهش، بررسی ارتباط میان ساختار استدلال، دقت پاسخ نهایی و میزان خروجی تولیدشده توسط مدل است.
 
-1. **Direct prompting** — ask for the answer directly.
-2. **Chain of Thought (CoT)** — ask for one sequential solution.
-3. **ToT-inspired** — generate multiple candidate solution paths, ask the same model to select one candidate, and report its answer.
+---
 
-> **Scope note:** This is a lightweight *ToT-inspired* implementation, not a faithful reproduction of the full Tree of Thoughts algorithm from the original paper. The generator and evaluator use the same language model, which may introduce self-evaluation bias.
+## 1. معرفی پژوهش
 
-## Research question
+مدل‌های زبانی بزرگ می‌توانند مسائل را با روش‌های مختلفی حل کنند. در ساده‌ترین حالت، مدل مستقیماً پاسخ را تولید می‌کند. در روش زنجیره افکار، مدل تشویق می‌شود مراحل حل مسئله را به‌صورت متوالی توضیح دهد. در رویکرد الهام‌گرفته از درخت افکار، چند مسیر احتمالی برای حل مسئله تولید و سپس یکی از آن‌ها انتخاب می‌شود.
 
-How does changing the structure of reasoning from a single direct/sequential response to candidate generation and evaluation affect answer accuracy and generation effort on multi-step problems?
+### سؤال اصلی پژوهش
 
-## Experimental setup
+تغییر ساختار استدلال مدل‌های زبانی از زنجیره افکار (CoT) به رویکردی الهام‌گرفته از درخت افکار (ToT) چه تأثیری بر دقت پاسخ‌گویی و کارایی مدل در حل مسائل چندمرحله‌ای دارد؟
 
-- Model: `Qwen/Qwen2.5-0.5B-Instruct`
-- Dataset: `openai/gsm8k`, `main` configuration, `test` split
-- Pilot size: 10 questions by default, sampled with a fixed seed
-- Methods: Direct, CoT, ToT-inspired
-- Primary metric: exact-match accuracy after extracting the final numeric answer
-- Efficiency proxies: generated tokens and model-generation calls
+### اهداف
 
-All methods receive the same sampled questions. The pilot is intended to validate the pipeline; begin with 2 questions on Kaggle CPU, then use 10 if the run completes reliably. GPU access is optional.
+- مقایسه دقت پاسخ نهایی در سه روش استدلالی
+- بررسی تأثیر تولید مراحل استدلال بر عملکرد مدل
+- بررسی نقش تولید و ارزیابی چند مسیر حل مسئله
+- مقایسه میزان خروجی تولیدشده و تعداد فراخوانی‌های مدل
+- بررسی محدودیت‌های ارزیابی و انتخاب پاسخ توسط خود مدل
 
-## Repository structure
+---
+
+## 2. روش‌های مورد بررسی
+
+### روش اول: Direct Prompting
+
+در این روش، مدل مستقیماً برای حل مسئله و ارائه پاسخ نهایی درخواست می‌شود. از مدل خواسته می‌شود توضیح اضافه ندهد و پاسخ را در قالب مشخصی ارائه کند.
+
+### روش دوم: Chain of Thought (CoT)
+
+در این روش، مدل باید مسئله را به‌صورت مرحله‌به‌مرحله حل کند. هدف، ایجاد یک مسیر استدلالی متوالی و قابل مشاهده است.
+
+### روش سوم: ToT-inspired
+
+در این پیاده‌سازی، مدل دو مسیر پیشنهادی مستقل برای حل مسئله تولید می‌کند. سپس همان مدل در نقش ارزیاب (Judge)، مسیرها را بررسی کرده و یکی را انتخاب می‌کند. پاسخ نهایی از مسیر انتخاب‌شده استخراج می‌شود.
+
+**نکته مهم:** پیاده‌سازی حاضر یک روش الهام‌گرفته از Tree of Thoughts است و بازتولید کامل الگوریتم اصلی ToT محسوب نمی‌شود. در این آزمایش از جست‌وجوی کامل درخت، توسعه چندسطحی گره‌ها و الگوریتم‌های پیشرفته هرس استفاده نشده است.
+
+---
+
+## 3. تنظیمات آزمایش
+
+| مؤلفه | مقدار |
+|---|---|
+| مدل زبانی | Qwen/Qwen2.5-0.5B-Instruct |
+| منبع داده | openai/gsm8k |
+| پیکربندی داده | main |
+| بخش داده | test |
+| تعداد مسائل | 10 |
+| Seed نمونه‌گیری | 42 |
+| تعداد مسیرهای پیشنهادی در ToT | 2 |
+| حداکثر توکن جدید در هر فراخوانی اصلی | 256 |
+| محیط اجرا | GitHub Codespaces |
+| چارچوب اجرا | Python, PyTorch, Transformers |
+
+هر سه روش روی مجموعه یکسانی از مسائل ارزیابی شده‌اند. نمونه‌ها با Seed ثابت انتخاب شده‌اند تا انتخاب داده‌ها قابل تکرار باشد.
+
+در روش‌های Direct و CoT، تولید پاسخ به‌صورت قطعی انجام شده است. تولید مسیرهای پیشنهادی در روش ToT-inspired با نمونه‌گیری انجام می‌شود.
+
+---
+
+## 4. معیارهای ارزیابی
+
+### 4.1 دقت پاسخ نهایی (Accuracy)
+
+پاسخ استخراج‌شده مدل با پاسخ صحیح مجموعه GSM8K مقایسه می‌شود. دقت از تقسیم تعداد پاسخ‌های صحیح بر تعداد کل مسائل محاسبه می‌شود.
+
+### 4.2 تعداد توکن‌های تولیدشده (Generated Tokens)
+
+میانگین تعداد توکن‌های خروجی مدل برای هر مسئله اندازه‌گیری می‌شود. این معیار برای مقایسه حجم خروجی تولیدشده به کار می‌رود و اندازه‌گیری مستقیم هزینه مالی، زمان محاسباتی یا مصرف انرژی نیست.
+
+### 4.3 تعداد فراخوانی مدل (Generation Calls)
+
+تعداد دفعاتی که مدل برای تولید پاسخ یا ارزیابی مسیرها فراخوانی می‌شود، ثبت می‌گردد.
+
+در تنظیم فعلی:
+- Direct: یک فراخوانی
+- CoT: یک فراخوانی
+- ToT-inspired: دو فراخوانی برای تولید مسیرها و یک فراخوانی برای داوری؛ در مجموع سه فراخوانی
+
+### 4.4 استخراج پاسخ
+
+پاسخ صحیح مسائل GSM8K از بخش مشخص‌شده با `####` استخراج می‌شود. پاسخ مدل فقط زمانی قابل استخراج است که در خروجی آن عبارت `Final answer:` وجود داشته باشد.
+
+پاسخ‌هایی که قابل استخراج نباشند، در محاسبه دقت به‌عنوان پاسخ نادرست محسوب می‌شوند. برنامه از حدس زدن پاسخ با استفاده از اعداد پراکنده در متن استدلال خودداری می‌کند.
+
+---
+
+## 5. نمونه‌ای از کد اصلی
+
+بخش زیر نمونه‌ای از منطق استخراج پاسخ و اعتبارسنجی انتخاب داور در فایل `src/experiment.py` است.
+
+```python
+import re
+
+FINAL_RE = re.compile(
+    r"Final\\s+answer\\s*:\\s*([^\\n\\r]+)",
+    re.IGNORECASE
+)
+
+JUDGE_RE = re.compile(
+    r"Best\\s+candidate\\s*:\\s*(\\d+)",
+    re.IGNORECASE
+)
+
+def model_answer(output):
+    # Only accept an explicitly marked final answer.
+    matches = FINAL_RE.findall(output)
+
+    if not matches:
+        return None
+
+    return normalize_number(matches[-1])
+
+
+def choose_candidate(judge_output, n_candidates):
+    # Require the exact expected judge response format.
+    match = JUDGE_RE.fullmatch(judge_output.strip())
+
+    if not match:
+        return None
+
+    selected = int(match.group(1))
+
+    if 1 <= selected <= n_candidates:
+        return selected
+
+    return None
+```
+
+در روش ToT-inspired، مسیرها به‌صورت جداگانه تولید می‌شوند و سپس برای ارزیابی به مدل ارسال می‌شوند:
+
+```python
+candidate_texts = []
+
+for _ in range(num_candidates):
+    candidate, token_count = generate(
+        tokenizer,
+        model,
+        candidate_prompt,
+        max_new_tokens,
+        sample=True
+    )
+    candidate_texts.append(candidate)
+
+judge_output, judge_tokens = generate(
+    tokenizer,
+    model,
+    judge_prompt,
+    max_new_tokens,
+    sample=False
+)
+
+selected = choose_candidate(
+    judge_output,
+    len(candidate_texts)
+)
+```
+
+این کد صرفاً نمونه‌ای از منطق اصلی است؛ نسخه کامل پیاده‌سازی در فایل `src/experiment.py` قرار دارد.
+
+---
+
+## 6. نتایج آزمایش اصلی
+
+نتایج زیر مربوط به اجرای 10 مسئله از مجموعه آزمون GSM8K است.
+
+| معیار | Direct | CoT | ToT-inspired |
+|---|---:|---:|---:|
+| تعداد پاسخ صحیح | 0 از 10 | 3 از 10 | 3 از 10 |
+| دقت | 0% | 30% | 30% |
+| پاسخ قابل استخراج | 9 | 4 | 4 |
+| میانگین توکن خروجی | 44.7 | 204.4 | 407.2 |
+| میانگین فراخوانی مدل | 1 | 1 | 3 |
+| خطای قالب داوری | 0 | 0 | 4 |
+
+### نمودار مقایسه دقت
+
+![Accuracy Comparison](results/accuracy_comparison.png)
+
+### فایل‌های نتایج
+
+- [گزارش جزئیات هر سؤال و خروجی مدل‌ها](results/question_report.md)
+- [جدول کامل نتایج آزمایش](results/summary.csv)
+- [داده خام خروجی مدل‌ها](results/experiment_results.jsonl)
+- [تنظیمات اجرای آزمایش](results/run_config.json)
+
+---
+
+## 7. تحلیل نتایج
+
+در این اجرای آزمایشی، روش Direct هیچ پاسخ صحیحی از 10 مسئله تولید نکرد. روش CoT به دقت 30 درصد رسید. روش ToT-inspired نیز دقت 30 درصد را ثبت کرد.
+
+بنابراین، در نمونه بررسی‌شده، تولید و ارزیابی چند مسیر پیشنهادی نسبت به CoT بهبود قابل مشاهده‌ای در دقت نهایی ایجاد نکرده است.
+
+از نظر حجم خروجی، میانگین توکن‌های تولیدشده در روش ToT-inspired برابر 407.2 بوده است؛ در حالی که این مقدار برای CoT برابر 204.4 است. همچنین روش ToT-inspired به‌طور متوسط سه فراخوانی مدل برای هر مسئله نیاز داشته است.
+
+در چهار مورد از ده مسئله، خروجی داور با قالب مورد انتظار برنامه مطابقت نداشته است. این موارد به‌عنوان خطای داوری ثبت شده‌اند و در صورت انتخاب نشدن مسیر معتبر، پاسخ نهایی قابل استخراج نبوده است.
+
+### جمع‌بندی نتایج
+
+در این آزمایش کوچک، CoT و ToT-inspired دقت یکسانی داشته‌اند، اما روش ToT-inspired خروجی بیشتری تولید کرده و به فراخوانی‌های بیشتری نیاز داشته است.
+
+این مشاهده نشان می‌دهد افزایش پیچیدگی ساختار استدلال لزوماً به افزایش دقت منجر نمی‌شود؛ دست‌کم در تنظیمات و نمونه بررسی‌شده در این پروژه.
+
+---
+
+## 8. محدودیت‌های پژوهش
+
+نتایج باید با توجه به محدودیت‌های زیر تفسیر شوند:
+
+1. تعداد مسائل آزمایش فقط 10 مورد است و برای نتیجه‌گیری آماری قوی کافی نیست.
+2. مدل استفاده‌شده Qwen2.5-0.5B-Instruct است و نتایج را نمی‌توان به همه مدل‌های زبانی تعمیم داد.
+3. روش ToT پیاده‌سازی‌شده نسخه کامل الگوریتم اصلی نیست.
+4. تولیدکننده مسیرها و داور از یک مدل استفاده می‌کنند؛ بنابراین احتمال سوگیری در ارزیابی خود مدل وجود دارد.
+5. تعداد توکن‌های خروجی فقط یک شاخص تقریبی از حجم تولید است و هزینه محاسباتی کامل را اندازه‌گیری نمی‌کند.
+6. دقت پاسخ نهایی معیار اصلی است و صحت واقعی تمام مراحل استدلال به‌صورت مستقل ارزیابی نشده است.
+7. خروجی قابل مشاهده مدل لزوماً بیانگر فرایند محاسباتی درونی آن نیست.
+
+بنابراین، نتایج این پروژه باید به‌عنوان یک مقایسه آزمایشی محدود در نظر گرفته شوند، نه اثبات برتری یا ضعف عمومی یک روش.
+
+---
+
+## 9. ساختار مخزن
 
 ```text
-.
+structured-reasoning-llm/
+│
 ├── prompts/
 │   ├── direct_prompt.txt
 │   ├── cot_prompt.txt
 │   ├── tot_candidates_prompt.txt
 │   └── tot_judge_prompt.txt
+│
 ├── src/
-│   └── experiment.py
+│   ├── experiment.py
+│   └── make_report.py
+│
 ├── results/
-│   └── .gitkeep
+│   ├── experiment_results.jsonl
+│   ├── summary.csv
+│   ├── run_config.json
+│   ├── accuracy_comparison.png
+│   └── question_report.md
+│
 ├── notebooks/
 │   └── kaggle_gpu_runner.ipynb
+│
 ├── requirements.txt
+├── CODESPACES.md
 └── README.md
 ```
 
-## Run
+### توضیح فایل‌ها
 
-Python 3.10+ is recommended. The included Kaggle notebook is configured to run on CPU; a GPU is optional. It first runs a 2-question smoke test with Qwen2.5-0.5B-Instruct, 96 maximum new tokens, and 2 candidate paths. CPU execution may take several minutes or longer. Run the 10-question pilot only after the smoke test succeeds. The model and dataset are downloaded on the first run, so the Kaggle session needs Internet access.
+- `experiment.py`: اجرای سه روش، تولید پاسخ‌ها، استخراج جواب نهایی و ثبت معیارها.
+- `make_report.py`: ساخت نمودار مقایسه دقت و گزارش سؤال‌به‌سؤال از روی نتایج ذخیره‌شده.
+- فایل‌های پوشه `prompts`: دستورهای ورودی مورد استفاده برای هر روش.
+- `experiment_results.jsonl`: خروجی خام مدل‌ها و اطلاعات هر مسئله.
+- `summary.csv`: خلاصه عددی عملکرد روش‌ها.
+- `run_config.json`: تنظیمات و اطلاعات اجرای آزمایش.
+- `accuracy_comparison.png`: نمودار نهایی مقایسه دقت.
+- `question_report.md`: گزارش تفصیلی نتایج هر مسئله.
+
+---
+
+## 10. نحوه اجرای پروژه
+
+Python 3.10 یا نسخه‌های جدیدتر توصیه می‌شود. اجرای مدل به حافظه و توان پردازشی وابسته است؛ استفاده از محیط ابری مانند GitHub Codespaces می‌تواند جایگزین مناسبی برای سیستم‌های فاقد GPU باشد.
+
+نصب وابستگی‌ها:
 
 ```bash
 pip install -r requirements.txt
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python src/experiment.py --sample-size 2 --seed 42 --max-new-tokens 96
+pip install matplotlib
 ```
 
-If the 2-question smoke test completes successfully, run the 10-question pilot:
+اجرای آزمایش:
 
 ```bash
-OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python src/experiment.py --sample-size 10 --seed 42 --max-new-tokens 96
+python src/experiment.py \
+  --sample-size 10 \
+  --seed 42 \
+  --num-candidates 2 \
+  --max-new-tokens 256
 ```
 
-Optional arguments:
+ساخت نمودار و گزارش:
 
-- `--model`: Hugging Face model ID
-- `--sample-size`: number of test questions
-- `--seed`: sampling seed
-- `--max-new-tokens`: generation limit per call
-- `--num-candidates`: number of ToT-inspired candidate paths
+```bash
+python src/make_report.py
+```
 
-## Output files
+فایل‌های خروجی در پوشه `results/` ذخیره می‌شوند.
 
-The script creates:
+---
 
-- `results/experiment_results.jsonl`: one record per question and method, including raw model output
-- `results/summary.csv`: accuracy, average generated tokens, and average generation calls per method
-- `results/run_config.json`: configuration and run metadata
+## 11. منابع و مبانی نظری
 
-Do not commit model weights. Review the output files before publishing results.
+این پروژه بر مبنای مفاهیم و پژوهش‌های مرتبط با استدلال در مدل‌های زبانی شکل گرفته است. منابع مورد مطالعه شامل موارد زیر هستند:
 
-## Method details and limitations
+- Wei et al. — Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.
+- Yao et al. — Tree of Thoughts: Deliberate Problem Solving with Large Language Models.
+- Yao et al. — ReAct: Synergizing Reasoning and Acting in Language Models.
+- Wang et al. — Self-Consistency Improves Chain of Thought Reasoning in Language Models.
+- Kojima et al. — Large Language Models are Zero-Shot Reasoners.
+- Attention Is All You Need — Vaswani et al.
 
-- Gold answers are extracted from GSM8K's `####` answer marker.
-- Model answers are scored using a conservative numeric final-answer parser. Unparseable answers count as incorrect rather than being guessed from arbitrary numbers in the reasoning.
-- Generated-token counts are a rough measure of output volume, **not** a measurement of monetary API cost or total hardware energy.
-- Each ToT-inspired candidate is generated in a separate sampled model call; the judge sees the candidate solutions generated by the same model. Its preference is not an independent correctness oracle.
-- This study evaluates final-answer correctness, not whether generated reasoning faithfully represents the model's internal computation.
-- A 20-question pilot is too small for broad claims or strong statistical conclusions.
+---
 
-## Current status
+## 12. وضعیت پروژه
 
-- [x] Repository initialized
-- [x] Experiment scripts and prompts added
-- [ ] Pilot executed
-- [ ] Results analyzed
-- [ ] Final presentation prepared
+- [x] انتخاب مسئله پژوهش و روش‌های مقایسه
+- [x] آماده‌سازی پرامپت‌های سه روش
+- [x] پیاده‌سازی آزمایش
+- [x] اجرای آزمایش اصلی روی 10 مسئله
+- [x] ثبت نتایج خام و خلاصه
+- [x] تولید نمودار مقایسه دقت
+- [x] تولید گزارش سؤال‌به‌سؤال
+- [x] تحلیل اولیه نتایج
+- [ ] تکمیل و آماده‌سازی ارائه نهایی
 
-No experimental results are claimed until a run has completed and its outputs have been inspected.
+---
+
+**نام پروژه:** Structured Reasoning in Language Models: From Chain of Thought to Tree of Thoughts
+
+**مدل:** Qwen2.5-0.5B-Instruct
+
+**داده:** GSM8K Test Split
+
+**تعداد مسائل ارزیابی‌شده:** 10

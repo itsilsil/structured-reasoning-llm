@@ -1,4 +1,7 @@
-Solve the following math word problem carefully. Work through the solution step by step, then give the final numeric answer clearly on the last line in exactly this format:
+Solve the following math word problem step by step.
+Use short calculations and avoid repeating the problem.
+Use at most 4 short steps.
+End with exactly one line in this format:
 Final answer: <number>
 
 Problem:

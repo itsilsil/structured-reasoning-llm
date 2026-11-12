@@ -1,4 +1,6 @@
-Solve the following math word problem. Give the final numeric answer clearly on the last line in exactly this format:
+Solve the following math word problem.
+Do not explain your reasoning.
+Return exactly one line in this format:
 Final answer: <number>
 
 Problem:

@@ -1,4 +1,9 @@
-You are solving a math word problem. Generate exactly ONE plausible, self-contained solution approach. Do not list alternative approaches and do not generate multiple candidates. Show the key calculation steps clearly and check the arithmetic. End with a line in this exact format: Final answer: <number>.
+Solve the following math word problem.
+Generate exactly ONE concise solution approach.
+Use at most 4 short calculation steps.
+Check your arithmetic.
+End with exactly one line in this format:
+Final answer: <number>
 
 Problem:
 {question}

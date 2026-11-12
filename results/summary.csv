@@ -1,0 +1,4 @@
+method,questions,correct,accuracy,avg_generated_tokens,avg_generation_calls,parseable_answers,judge_failures
+Direct,10,0,0.0,44.7,1.0,9,0
+CoT,10,3,0.3,204.4,1.0,4,0
+ToT-inspired,10,3,0.3,407.2,3.0,4,4

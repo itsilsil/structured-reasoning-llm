@@ -24,8 +24,10 @@ RESULTS_DIR = ROOT / "results"
 
 NUMBER_RE = re.compile(r"-?\d+(?:,\d{3})*(?:\.\d+)?")
 FINAL_RE = re.compile(r"Final\s+answer\s*:\s*([^\n\r]+)", re.IGNORECASE)
-JUDGE_RE = re.compile(r"Best\s+candidate\s*:\s*(\d+)", re.IGNORECASE)
-
+JUDGE_RE = re.compile(
+    r"Best\s+candidate\s*:\s*(\d+)",
+    re.IGNORECASE,
+)
 
 def read_prompt(name: str) -> str:
     return (PROMPT_DIR / name).read_text(encoding="utf-8")
@@ -102,7 +104,7 @@ def generate(tokenizer, model, prompt: str, max_new_tokens: int, sample: bool = 
 
 
 def choose_candidate(judge_output: str, n_candidates: int) -> int | None:
-    match = JUDGE_RE.search(judge_output)
+    match = JUDGE_RE.fullmatch(judge_output.strip())
     if not match:
         return None
     selected = int(match.group(1))
@@ -116,7 +118,7 @@ def main():
     parser.add_argument("--model", default="Qwen/Qwen2.5-0.5B-Instruct")
     parser.add_argument("--sample-size", type=int, default=10)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--max-new-tokens", type=int, default=160)
+    parser.add_argument("--max-new-tokens", type=int, default=256)
     parser.add_argument("--num-candidates", type=int, default=2)
     args = parser.parse_args()
 
@@ -187,8 +189,17 @@ def main():
             candidate_texts.append(candidate)
             candidate_tokens += token_count
 
+        candidate_answers = [
+            model_answer(candidate) for candidate in candidate_texts
+        ]
         candidate_block = "\n\n".join(
-            f"Candidate {i + 1}:\n{text}" for i, text in enumerate(candidate_texts)
+        f"Candidate {i + 1}:\n"
+        f"Extracted final answer: "
+        f"{answer if answer is not None else 'NOT PROVIDED'}\n"
+        f"Candidate solution:\n{text}"
+        for i, (text, answer) in enumerate(
+            zip(candidate_texts, candidate_answers)
+        )
         )
         judge_text, judge_tokens = generate(
             tokenizer, model,
@@ -205,6 +216,9 @@ def main():
             "generated_tokens": candidate_tokens + judge_tokens,
             "generation_calls": args.num_candidates + 1,
             "selected_candidate": selected,
+            "candidate_answers": candidate_answers,
+            "judge_selection_valid": selected is not None,
+            "judge_output": judge_text,
             "raw_output": json.dumps({
                 "candidates": candidate_texts,
                 "judge_output": judge_text,
@@ -236,6 +250,12 @@ def main():
             ),
             "avg_generation_calls": (
                 sum(row["generation_calls"] for row in rows) / n if n else 0.0
+            ),
+                        "parseable_answers": sum(
+                row["predicted_answer"] is not None for row in rows
+            ),
+            "judge_failures": sum(
+                row.get("judge_selection_valid") is False for row in rows
             ),
         })
 
