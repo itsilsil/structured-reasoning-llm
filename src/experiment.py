@@ -341,7 +341,7 @@ def main():
             "started_at": utc_now(),
         })
         write_json_atomic(config_path, config)
-        print(f"Selected {len(selected_indices)} fresh questions ({previously used} had been used before this run).")
+        print(f"Selected {len(selected_indices)} fresh questions ({previously_used} had been used before this run).")
 
         direct_template = read_prompt("direct_prompt.txt")
         cot_template = read_prompt("cot_prompt.txt")
