@@ -120,7 +120,13 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-new-tokens", type=int, default=256)
     parser.add_argument("--num-candidates", type=int, default=2)
+    parser.add_argument("--output-dir", type=str, default=None,
+                        help="Directory for this run's output files (default: results/)")
     args = parser.parse_args()
+
+    global RESULTS_DIR
+    if args.output_dir:
+        RESULTS_DIR = Path(args.output_dir).expanduser().resolve()
 
     if args.sample_size < 1 or args.num_candidates < 2:
         parser.error("--sample-size must be positive and --num-candidates must be at least 2")
@@ -157,7 +163,7 @@ def main():
             args.max_new_tokens, sample=False
         )
         records.append({
-            "dataset_index": dataset_index, "method": "Direct",
+            "dataset_index": dataset_index, "question": question, "method": "Direct",
             "gold_answer": target, "predicted_answer": model_answer(direct_text),
             "correct": model_answer(direct_text) == target and target is not None,
             "generated_tokens": direct_tokens, "generation_calls": 1,
@@ -170,7 +176,7 @@ def main():
             args.max_new_tokens, sample=False
         )
         records.append({
-            "dataset_index": dataset_index, "method": "CoT",
+            "dataset_index": dataset_index, "question": question, "method": "CoT",
             "gold_answer": target, "predicted_answer": model_answer(cot_text),
             "correct": model_answer(cot_text) == target and target is not None,
             "generated_tokens": cot_tokens, "generation_calls": 1,
@@ -210,7 +216,7 @@ def main():
         selected_text = candidate_texts[selected - 1] if selected else ""
         prediction = model_answer(selected_text) if selected_text else None
         records.append({
-            "dataset_index": dataset_index, "method": "ToT-inspired",
+            "dataset_index": dataset_index, "question": question, "method": "ToT-inspired",
             "gold_answer": target, "predicted_answer": prediction,
             "correct": prediction == target and target is not None,
             "generated_tokens": candidate_tokens + judge_tokens,
