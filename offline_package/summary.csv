@@ -1,0 +1,4 @@
+method,questions,correct,accuracy,parseable_answers,avg_input_tokens,avg_generated_tokens,avg_total_tokens,avg_generation_calls,avg_elapsed_seconds,judge_failures
+Direct,30,2,0.06666666666666667,22,114.93333333333334,40.666666666666664,155.6,1.0,15.573559999999999,0
+CoT,30,3,0.1,4,129.93333333333334,212.06666666666666,342.0,1.0,36.59483,0
+ToT-inspired,30,6,0.2,10,881.4,374.8333333333333,1256.2333333333333,3.0,115.41686,8
